@@ -16,9 +16,36 @@ const [isProfileCompleted, setIsProfileCompleted] = useState(false); // New stat
 // 1. Listen for Auth State Changes
 useEffect(() => {
     // Initial check for sesion
-    supabase.auth.getSession().then(({ data: { session } })) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
         setSession(session);
         setLoading(false);   
+    });
+
+    const { data: { listener }} = supabase.auth.onAuthStateChange(
+        (event, currentSession) => {
+            setSession(currentSession);
+        }
+    );
+
+    return () => {
+        if (listener && typeof listener.unsubscribe === 'function') {
+            listener.unsubscribe();
+        }
+    };
+}, []);
+
+useEffect(() => {
+    const user = session?.user ?? null;
+
+    if (user) {
+        const checkProfileStatus = async() => {
+            setLoading(true);
+            const { profile, error } = await fetchUserProfile(user.id);
+
+            if (error) {
+                
+            }
+        }
     }
 })
 }
