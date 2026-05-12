@@ -3,26 +3,28 @@ import React from "react";
 import { ActivityIndicator, View } from "react-native";
 import AuthStack from "./AuthStack";
 import MainStack from "./MainStack";
+import { useAuth } from "../context/AuthContext";
 
-const appNavigator = () => {
+const AppNavigator = () => {
     const { session, loading } = useAuth();
+
     if (loading) {
         return (
-        <View>
-            <ActivityIndicator />
-        </View>
-        )
+            <View>
+                <ActivityIndicator />
+            </View>
+        );
     }
 
     return (
-    <NavigationContainer>
-        {session && session.user ? (
-            <MainStack />
-        ) : (
-            <AuthStack />
-        )}
-    </NavigationContainer>
+        <NavigationContainer>
+            {session && session.user ? (
+                <MainStack />
+            ) : (
+                <AuthStack />
+            )}
+        </NavigationContainer>
     );
 };
 
-export default appNavigator;
+export default AppNavigator;
