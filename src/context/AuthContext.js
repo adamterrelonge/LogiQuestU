@@ -1,124 +1,87 @@
+// src/context/AuthContext.js
+// Provides session, loading state, and auth actions to the whole app.
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
-import { supabase, fetchUserProfile } from '../utils/supabase';
+import { supabase, fetchUserProfile, upsertUserProfile } from '../utils/supabase';
 
 const AuthContext = createContext();
 
-// Custom hook for easy access to auth logic
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    const [session, setSession] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [session,            setSession]            = useState(null);
+    const [loading,            setLoading]            = useState(true);
     const [isProfileCompleted, setIsProfileCompleted] = useState(false);
 
-    /**
-     * 1. AUTH STATE LISTENER
-     * Runs once on mount to check for an existing session and 
-     * sets up a listener for any future login/logout events.
-     */
+    // ── 1. Listen for auth state changes ──────────────────────────
     useEffect(() => {
-        // Initial session check
+        // Grab any existing session on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            if (!session) setLoading(false);
+            setLoading(false);
         });
 
-        // Listen for changes (sign in, sign out, etc.)
+        // Subscribe to future changes (login / logout / token refresh)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (_event, currentSession) => {
+            async (event, currentSession) => {
                 setSession(currentSession);
-                if (!currentSession) {
-                    setIsProfileCompleted(false);
-                    setLoading(false);
+
+                // When a brand-new account is confirmed, create the profile row
+                if (event === 'SIGNED_IN' && currentSession?.user) {
+                    const { user } = currentSession;
+                    const { error } = await upsertUserProfile(user.id, user.email);
+                    if (error) {
+                        console.error('Profile upsert failed:', error.message);
+                    }
                 }
+
+                setLoading(false);
             }
         );
 
+        // Correct cleanup: use the subscription returned above
         return () => subscription.unsubscribe();
     }, []);
 
-    /**
-     * 2. PROFILE COMPLETION CHECK
-     * Whenever the session changes (user logs in), we check the 
-     * 'profiles' table to see if they've finished their setup.
-     */
+    // ── 2. Check profile completeness whenever session changes ────
     useEffect(() => {
-        if (!session?.user) return;
+        const user = session?.user ?? null;
 
-        const checkProfileStatus = async () => {
-            setLoading(true);
-            try {
-                const { profile, error } = await fetchUserProfile(session.user.id);
-
-                if (error) {
-                    console.error('Error fetching profile:', error.message);
-                    setIsProfileCompleted(false);
-                } else {
-                    // Update the state based on the database flag
-                    setIsProfileCompleted(profile?.profile_completed ?? false);
-                }
-            } catch (err) {
-                console.error('Profile check failed:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkProfileStatus();
-    }, [session]);
-
-    /**
-     * 3. SIGN UP LOGIC
-     * Creates the auth user AND the initial row in your 'profiles' table.
-     */
-    const signUp = async (email, password, fullName) => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-        });
-
-        if (error) throw error;
-
-        // Create the profile entry in your database immediately
-        if (data?.user) {
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    user_Id: data.user.id,    // Matches your DB column name
-                    nickname: fullName,       // Stores the name from the Register screen
-                    profile_completed: false,
-                });
-
-            if (profileError) {
-                console.error('Initial profile creation failed:', profileError.message);
-            }
+        if (!user) {
+            setIsProfileCompleted(false);
+            setLoading(false);
+            return;
         }
 
-        return data;
-    };
+        const checkProfile = async () => {
+            setLoading(true);
+            const { profile, error } = await fetchUserProfile(user.id);
 
-    /**
-     * 4. SIGN IN LOGIC
-     */
-    const signIn = async (email, password) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-    };
+            if (error) {
+                console.error('Failed to fetch profile:', error.message);
+                setIsProfileCompleted(false);
+            } else {
+                setIsProfileCompleted(profile?.profile_completed ?? false);
+            }
 
-    /**
-     * 5. SIGN OUT LOGIC
-     */
+            setLoading(false);
+        };
+
+        checkProfile();
+    }, [session]);
+
+    // ── 3. Sign out helper ────────────────────────────────────────
     const signOut = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) Alert.alert('Sign Out Error', error.message);
     };
 
+    const value = { session, loading, isProfileCompleted, signOut };
+
     return (
-        <AuthContext.Provider 
-            value={{ session, loading, isProfileCompleted, setIsProfileCompleted, signIn, signUp, signOut }}>
-            {!loading || session ? children : null} 
-            {/* Prevents UI flickering while checking session */}
+        <AuthContext.Provider value={value}>
+            {children}
         </AuthContext.Provider>
     );
 };
