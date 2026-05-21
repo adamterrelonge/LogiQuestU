@@ -1,5 +1,5 @@
 // src/context/AuthContext.js
-// Provides session, loading state, and auth actions to the whole app.
+// Provides session, loading, isGuest, and auth actions to the whole app.
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
@@ -14,25 +14,32 @@ export const AuthProvider = ({ children }) => {
     const [loading,            setLoading]            = useState(true);
     const [isProfileCompleted, setIsProfileCompleted] = useState(false);
 
-    // ── 1. Listen for auth state changes ──────────────────────────
+    // isGuest is true when the current session belongs to an anonymous user.
+    // Supabase sets user.is_anonymous = true for signInAnonymously() sessions.
+    const [isGuest, setIsGuest] = useState(false);
+
+    // ── 1. Subscribe to auth state changes ────────────────────────
     useEffect(() => {
-        // Grab any existing session on mount
+        // Check for any session that already exists (e.g. app reopen)
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
+            setIsGuest(session?.user?.is_anonymous ?? false);
             setLoading(false);
         });
 
-        // Subscribe to future changes (login / logout / token refresh)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, currentSession) => {
                 setSession(currentSession);
 
-                // When a brand-new account is confirmed, create the profile row
+                // Keep isGuest flag in sync on every auth event
+                setIsGuest(currentSession?.user?.is_anonymous ?? false);
+
+                // Only upsert a profile row for real (non-anonymous) sign-ins
                 if (event === 'SIGNED_IN' && currentSession?.user) {
                     const { user } = currentSession;
-                    const { error } = await upsertUserProfile(user.id, user.email);
-                    if (error) {
-                        console.error('Profile upsert failed:', error.message);
+                    if (!user.is_anonymous) {
+                        const { error } = await upsertUserProfile(user.id, user.email);
+                        if (error) console.error('Profile upsert failed:', error.message);
                     }
                 }
 
@@ -40,15 +47,15 @@ export const AuthProvider = ({ children }) => {
             }
         );
 
-        // Correct cleanup: use the subscription returned above
         return () => subscription.unsubscribe();
     }, []);
 
-    // ── 2. Check profile completeness whenever session changes ────
+    // ── 2. Fetch profile completeness for real users ───────────────
     useEffect(() => {
         const user = session?.user ?? null;
 
-        if (!user) {
+        // Guests have no profile row — skip the fetch
+        if (!user || user.is_anonymous) {
             setIsProfileCompleted(false);
             setLoading(false);
             return;
@@ -57,27 +64,31 @@ export const AuthProvider = ({ children }) => {
         const checkProfile = async () => {
             setLoading(true);
             const { profile, error } = await fetchUserProfile(user.id);
-
             if (error) {
                 console.error('Failed to fetch profile:', error.message);
                 setIsProfileCompleted(false);
             } else {
                 setIsProfileCompleted(profile?.profile_completed ?? false);
             }
-
             setLoading(false);
         };
 
         checkProfile();
     }, [session]);
 
-    // ── 3. Sign out helper ────────────────────────────────────────
+    // ── 3. Sign out (works for both guests and real users) ─────────
     const signOut = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) Alert.alert('Sign Out Error', error.message);
     };
 
-    const value = { session, loading, isProfileCompleted, signOut };
+    const value = {
+        session,
+        loading,
+        isGuest,               // ← use this anywhere to gate features
+        isProfileCompleted,
+        signOut,
+    };
 
     return (
         <AuthContext.Provider value={value}>
