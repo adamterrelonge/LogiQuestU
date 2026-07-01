@@ -9,6 +9,7 @@ export const loginStyles = StyleSheet.create({
     gradient: { flex: 1 },
     safe:     { flex: 1 },
     flex:     { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    title:    {flex: 1, color: 'white', fontSize: 20, marginBottom: 20, paddingBottom: 20},
 
     card: {
         width: '82%',

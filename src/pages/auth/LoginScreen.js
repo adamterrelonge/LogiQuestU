@@ -3,13 +3,13 @@
 
 import React from 'react';
 import {
-    View, KeyboardAvoidingView, Platform,
+    View, KeyboardAvoidingView, Platform, Text,
     TouchableWithoutFeedback, Keyboard, Alert, SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
-import LogoBrand  from '../../components/LogoBrand';
+import Logo from '../../components/Logo';
 import AuthInput  from '../../components/AuthInput';
 import AuthButton from '../../components/AuthButton';
 import useLogin   from '../../hooks/useLogin';
@@ -39,7 +39,8 @@ const LoginScreen = ({ navigation }) => {
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <View style={styles.card}>
 
-                            <LogoBrand />
+                        <Logo size="large" />
+                            <Text style={styles.title}>Logiquest</Text>
 
                             <AuthInput
                                 icon="mail-outline"
