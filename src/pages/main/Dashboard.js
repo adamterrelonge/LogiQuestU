@@ -53,22 +53,28 @@ const SubjectCard = ({ subject, onPress }) => (
 const Dashboard = ({ navigation }) => {
     const { signOut, isGuest } = useAuth();
 
-    const handleSubjectPress = (subjectId) => {
-        if (isGuest) {
-            // Guests can play but get reminded scores won't save
-            Alert.alert(
-                'Guest Mode',
-                "You can play, but your score won't be saved. Register to track your progress!",
-                [
-                    { text: 'Register', onPress: () => navigation.navigate('Register') },
-                    { text: 'Play anyway', style: 'cancel' },
-                ]
-            );
-            return;
-        }
-        // TODO: navigation.navigate('Quiz', { subject: subjectId });
-        console.log('Subject selected:', subjectId);
-    };
+    // src/pages/main/Dashboard.js (inside the Dashboard component)
+
+const handleSubjectPress = (subjectId) => {
+    if (isGuest) {
+        // Guests can play but get reminded scores won't save
+        Alert.alert(
+            'Guest Mode',
+            "You can play, but your score won't be saved. Register to track your progress!",
+            [
+                { text: 'Register', onPress: () => navigation.navigate('Register') },
+                {
+                    text: 'Play anyway',
+                    onPress: () => navigation.navigate('Quiz', { subject: subjectId }),
+                },
+            ]
+        );
+        return;
+    }
+
+    // Registered user — navigate straight into the quiz for the chosen subject
+    navigation.navigate('Quiz', { subject: subjectId });
+};
 
     return (
         <SafeAreaView style={styles.safe}>
