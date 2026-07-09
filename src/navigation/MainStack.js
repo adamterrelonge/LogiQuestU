@@ -4,6 +4,7 @@ import Dashboard from "../pages/main/Dashboard";
 import MathQuizScreen from "../pages/quiz/MathQuizScreen";
 import GameOverScreen from "../pages/quiz/GameOverScreen";
 import ResultsScreen from "../pages/quiz/ResultsScreen";
+import QuizRouter from "../pages/quiz/QuizRouter";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,4 +17,4 @@ export default function MainStack() {
             <Stack.Screen name="Results" component={ResultsScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     );
-} 
+}  
