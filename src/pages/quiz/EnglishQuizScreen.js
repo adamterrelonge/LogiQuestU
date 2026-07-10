@@ -11,8 +11,9 @@ import MultipleChoiceOptions from '../../components/quiz/MultipleChoiceOptions';
 import ExitQuizButton from '../../components/quiz/ExitQuizButton';
 import { englishQuestions } from '../../data/englishQuestions';
 
-const EnglishQuizScreen = ({ navigation }) => {
-  const questions = englishQuestions.grade6;
+const EnglishQuizScreen = ({ route, navigation }) => {
+  const grade = route?.params?.grade ?? 6;
+  const questions = englishQuestions[`grade${grade}`] ?? [];
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -59,7 +60,7 @@ const EnglishQuizScreen = ({ navigation }) => {
       <LivesDisplay lives={lives} maxLives={3} />
 
       <QuestionCard
-  grade="6"
+  grade={grade} 
   questionNumber={questionIndex + 1}
   totalQuestions={questions.length}
   instruction={currentQuestion.instruction}

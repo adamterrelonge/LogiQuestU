@@ -10,11 +10,11 @@ import ScoreHeader from '../../components/quiz/ScoreHeader';
 import LivesDisplay from '../../components/quiz/LivesDisplay';
 import QuestionCard from '../../components/quiz/QuestionCard';
 import MultipleChoiceOptions from '../../components/quiz/MultipleChoiceOptions';
-import { mathQuestions } from '../../data/mathQuestions';
+import { scienceQuestions } from '../../data/scienceQuestions';
 
-const MathQuizScreen = ({ route, navigation }) => {
+const ScienceQuizScreen = ({ route, navigation }) => {
   const grade = route?.params?.grade ?? 6;
-  const questions = mathQuestions[`grade${grade}`] ?? [];
+  const questions = scienceQuestions[`grade${grade}`] ?? [];
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 60 },
 });
 
-export default MathQuizScreen; 
+export default ScienceQuizScreen; 
