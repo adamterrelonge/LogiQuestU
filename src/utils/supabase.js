@@ -73,3 +73,44 @@ export async function fetchLeaderboard(limit = 3) {
 
     return { leaderboard, error: null };
 } 
+
+// ── Record a wrong answer (or bump miss_count if already recorded) ─
+export async function recordIncorrectAnswer(userId, subject, grade, questionId) {
+    const { data: existing } = await supabase
+        .from('incorrect_answers')
+        .select('id, miss_count')
+        .eq('user_id', userId)
+        .eq('subject', subject)
+        .eq('question_id', questionId)
+        .maybeSingle();
+
+    if (existing) {
+        return supabase
+            .from('incorrect_answers')
+            .update({ miss_count: existing.miss_count + 1, last_missed_at: new Date().toISOString() })
+            .eq('id', existing.id);
+    }
+
+    return supabase
+        .from('incorrect_answers')
+        .insert({ user_id: userId, subject, grade, question_id: questionId });
+}
+
+// ── Remove a mistake once the user answers it correctly in review ──
+export async function clearIncorrectAnswer(userId, subject, questionId) {
+    return supabase
+        .from('incorrect_answers')
+        .delete()
+        .eq('user_id', userId)
+        .eq('subject', subject)
+        .eq('question_id', questionId);
+}
+
+// ── Fetch all recorded mistakes for a user ──────────────────────────
+export async function fetchIncorrectAnswers(userId) {
+    const { data, error } = await supabase
+        .from('incorrect_answers')
+        .select('subject, grade, question_id, miss_count')
+        .eq('user_id', userId);
+    return { mistakes: data ?? [], error };
+} 
