@@ -190,3 +190,11 @@ const styles = StyleSheet.create({
     ctaBtn: { backgroundColor: '#845EF7', borderRadius: 14, padding: 16, alignItems: 'center' },
     ctaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
+
+<TouchableOpacity
+    style={styles.leaderboardBtn}
+    onPress={() => navigation.navigate('Leaderboard')}
+>
+    <Ionicons name="trophy-outline" size={18} color="#fff" />
+    <Text style={styles.leaderboardBtnText}>Leaderboard</Text>
+</TouchableOpacity> 

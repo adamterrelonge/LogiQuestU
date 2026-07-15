@@ -50,4 +50,26 @@ export async function upsertUserProfile(userId, email) {
         .select()
         .single();
     return { data, error };
-}
+} 
+
+// ── Fetch top N scores for the leaderboard ─────────────────────────
+// Joins scores -> profiles to get each player's nickname.
+// Adjust 'scores' / column names if your table differs.
+export async function fetchLeaderboard(limit = 3) {
+    const { data, error } = await supabase
+        .from('scores')
+        .select('score, user_id, profiles ( nickname )')
+        .order('score', { ascending: false })
+        .limit(limit);
+
+    if (error) return { leaderboard: [], error };
+
+    // Flatten the joined profile so the UI doesn't need to know about it
+    const leaderboard = (data ?? []).map((row) => ({
+        userId: row.user_id,
+        score: row.score,
+        nickname: row.profiles?.nickname ?? 'Player',
+    }));
+
+    return { leaderboard, error: null };
+} 
