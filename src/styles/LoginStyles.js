@@ -80,4 +80,7 @@ export const loginStyles = StyleSheet.create({
     solidBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 
     userIconWrapper: { marginTop: 18 },
+
+    leaderboardBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#7B2FBE', borderRadius: 14, padding: 14, marginBottom: 16 },
+leaderboardBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 }, 
 });

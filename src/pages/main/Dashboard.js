@@ -124,6 +124,26 @@ const Dashboard = ({ navigation }) => {
                     </View>
                 </TouchableOpacity>
 
+                {/* Leaderboard */}
+                <TouchableOpacity
+                   style={styles.leaderboardBtn}
+                   onPress={() => navigation.navigate('Leaderboard')}
+                >
+                 <Ionicons name="trophy-outline" size={18} color="#fff" />
+                 <Text style={styles.leaderboardBtnText}>Leaderboard</Text>
+                </TouchableOpacity>
+
+                {/* Settings */}
+                <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+    <Ionicons name="settings-outline" size={24} color="#1A1A2E" />
+</TouchableOpacity>
+
+                {/* Player profile */}
+                <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+    <Ionicons name="person-circle-outline" size={28} color="#1A1A2E" />
+</TouchableOpacity> 
+
+
                 {/* Register CTA — guests only */}
                 {isGuest && (
                     <TouchableOpacity
@@ -189,12 +209,4 @@ const styles = StyleSheet.create({
     // Guest CTA
     ctaBtn: { backgroundColor: '#845EF7', borderRadius: 14, padding: 16, alignItems: 'center' },
     ctaText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-});
-
-<TouchableOpacity
-    style={styles.leaderboardBtn}
-    onPress={() => navigation.navigate('Leaderboard')}
->
-    <Ionicons name="trophy-outline" size={18} color="#fff" />
-    <Text style={styles.leaderboardBtnText}>Leaderboard</Text>
-</TouchableOpacity> 
+}); 
