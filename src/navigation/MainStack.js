@@ -8,6 +8,8 @@ import GradeSelectScreen from "../pages/quiz/GradeSelectScreen";
 import LeaderboardScreen from "../pages/main/LeaderboardScreen";
 import SettingsScreen from "../pages/main/SettingsScreen";
 import ProfileScreen from "../pages/main/ProfileScreen";
+import FeedbackScreen from "../pages/main/FeedbackScreen";
+import ReviewQuizScreen from "../pages/quiz/ReviewQuizScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,8 @@ export default function MainStack() {
             <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="Feedback" component={FeedbackScreen} />
+            <Stack.Screen name="ReviewQuiz" component={ReviewQuizScreen} />
         </Stack.Navigator>
     );
 }  

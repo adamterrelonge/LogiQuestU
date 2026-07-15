@@ -11,6 +11,25 @@ import LivesDisplay from '../../components/quiz/LivesDisplay';
 import QuestionCard from '../../components/quiz/QuestionCard';
 import MultipleChoiceOptions from '../../components/quiz/MultipleChoiceOptions';
 import { mathQuestions } from '../../data/mathQuestions';
+import { useAuth } from '../../context/AuthContext';
+import { recordIncorrectAnswer } from '../../utils/supabase';
+
+const { session } = useAuth();
+
+const handleSubmit = () => {
+    const isCorrect = Number(currentInput) === currentQuestion.answer;
+
+    if (isCorrect) {
+        setScore((prev) => prev + 10);
+    } else {
+        setLives((prev) => Math.max(prev - 1, 0));
+        // NEW: persist the mistake so it can show up in Feedback
+        if (session?.user?.id) {
+            recordIncorrectAnswer(session.user.id, 'math', 'grade6', currentQuestion.id);
+        }
+    }
+    // ...rest unchanged
+}; 
 
 const MathQuizScreen = ({ route, navigation }) => {
   const grade = route?.params?.grade ?? 6;
