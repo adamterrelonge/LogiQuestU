@@ -1,6 +1,6 @@
-// src/pages/quiz/ScienceQuizScreen.js
-// Multiple-choice quiz screen for Science, driven by the grade selected
-// on GradeSelectScreen (passed via route.params.grade). 
+// src/pages/quiz/MathQuizScreen.js
+// Multiple-choice quiz screen for Math, driven by the grade selected
+// on GradeSelectScreen (passed via route.params.grade).
 
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -14,24 +14,8 @@ import { mathQuestions } from '../../data/mathQuestions';
 import { useAuth } from '../../context/AuthContext';
 import { recordIncorrectAnswer } from '../../utils/supabase';
 
-const { session } = useAuth();
-
-const handleSubmit = () => {
-    const isCorrect = Number(currentInput) === currentQuestion.answer;
-
-    if (isCorrect) {
-        setScore((prev) => prev + 10);
-    } else {
-        setLives((prev) => Math.max(prev - 1, 0));
-        // NEW: persist the mistake so it can show up in Feedback
-        if (session?.user?.id) {
-            recordIncorrectAnswer(session.user.id, 'math', 'grade6', currentQuestion.id);
-        }
-    }
-    // ...rest unchanged
-}; 
-
 const MathQuizScreen = ({ route, navigation }) => {
+  const { session } = useAuth();
   const grade = route?.params?.grade ?? 6;
   const questions = mathQuestions[`grade${grade}`] ?? [];
 
@@ -61,6 +45,10 @@ const MathQuizScreen = ({ route, navigation }) => {
 
     setScore((prev) => (isCorrect ? prev + 10 : prev));
     setLives(nextLives);
+
+    if (!isCorrect && session?.user?.id) {
+      recordIncorrectAnswer(session.user.id, 'math', `grade${grade}`, currentQuestion.id);
+    }
 
     setTimeout(() => {
       if (nextLives <= 0) {
